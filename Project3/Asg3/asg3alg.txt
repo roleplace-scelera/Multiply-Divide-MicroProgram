@@ -1,0 +1,76 @@
+
+The Level-2 instruction formats are:
+
+IMULT	// integer multiply   Pop two words from stack as
+	//	multiplicand: m[SP-1]
+	//	multiplier:   m[SP]
+	// and push their product
+	// i.e.  m[SP-1]= ( m[SP-1] * m[SP] )
+
+IDIVI	// integer divide    Pop two words from the stack as
+	//	dividend: m[SP-1]
+	//	divisor:  m[SP]
+	// and push the remainder and then push the quotient
+	// i.e.  m[SP-1]= remainder( m[SP-1] / m[SP] )
+	//       m[SP]= quotient( m[SP-1] / m[SP] )
+
+OUTBIN	// Pop word from stack and print the binary values of the word
+	//  from MSB to LSB as groups of 4 bits with one space between groups.
+	// e.g.  1111 1111 1111 1111 1111 1111 1111 1111
+	// Include the MAL code for OUTBIN directly from OutBinNibble.pdf file
+
+where m stands for the main memory (one dimensional array).
+
+
+Algorithms for IMULT and IDIVI 
+----------------------------
+
+  IMULT
+  -----
+               Multiplicand        Mutiplier
+                 m[SP-1]      *      m[SP]
+  Three temporary registers are required (A,B,C)
+  
+      i) Initialize A to zero
+         Move Multiplicand to B
+         Move multiplier to C
+     
+      ii) Repeat the following N times where register size = N bits
+  		a. 1-bit Logical Left shift A
+                b. If ( leftmostbit of C is 1 )
+  			then { add B to A }
+  		c. 1-bit Logical Left shift C
+
+  At the end, A contains the result.
+  
+  
+
+  IDIVI
+  -----
+                Dividend       Divisor
+  		 m[SP-1]   /    m[SP]
+  Three temporary registers are required (A,B,C)
+  
+      i) Initialize A to zero
+         Move dividend to B
+         Move divisor to C
+      
+     ii) Repeat the following N times where register size = N bits
+  		a. 1-bit Logical Left shift A and 1-bit Logical Left shift B
+                       After shifting both registers,
+  			the discarded bit from B is assigned to 
+                          the rightmost bit of A
+                b. Subtract C from A       (i.e. A := A - C)
+  		c. If ( the subtraction was possible (i.e (A - C) >= 0) )
+  		   then { rightmost bit of B gets 1 }
+  		   else
+  			{ rightmost bit of B gets 0
+  			  Restore the value of A (i.e. A := A + C) }
+
+  At the end, B contains the quotient and A contains the remainder.
+
+  
+Note: Both algorithms will work correctly if the operands are
+        positive integers and the result value does not exceed
+        the maximum capacity of a register.
+      Assume the operands satisfy the above conditions.
